@@ -3,17 +3,29 @@ import { DataGrid } from '@mui/x-data-grid';
 import { DatosEmpleados } from './datos';
 import './App.css';
 import { useState } from 'react';
+import axios from 'axios';
 
 function App() {
+  axios.defaults.withCredentials = true;
   const [Ocultar, setOcultar] = useState(false);
+  const [datos, setDatos] = useState([]);
+
   const columns = [
-    { field: 'id', headerName: 'ID', width: 100 },
-    { field: 'nombre', headerName: 'Nombre', width: 200 }, 
+    { field: 'EmpleadoClave', headerName: 'ID', width: 100 },
+    { field: 'EmpleadoNombre', headerName: 'Nombre', width: 200 }, 
   ];
 
-  const handleGenerarClick = () => {
-    setOcultar(true); // Mostrar el DataGrid y el botón "Limpiar"
+  const handleGenerarClick = async () => {
+    try {
+      const response = await axios.get('/webgisa/api/gisa/ght001722');
+      setDatos(response.data);
+      console.log(response.data);
+      setOcultar(true); // Mostrar el DataGrid y el botón "Limpiar"
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
+
 
   const handleLimpiarClick = () => {
     setOcultar(false); // Ocultar el DataGrid y el botón "Limpiar"
@@ -33,16 +45,17 @@ function App() {
       {Ocultar && ( // Mostrar el DataGrid y el botón "Limpiar" solo si Ocultar es verdadero
           <>
             <DataGrid
-              rows={DatosEmpleados}
-              columns={columns}
+               rows={datos}
+               columns={columns}
+               getRowId={(row) => row.EmpleadoClave}
               initialState={{
                 pagination: {
                   paginationModel: {
-                    pageSize: 5,
+                    pageSize: 20,
                   },
                 },
               }}
-              pageSizeOptions={[10]}
+              pageSizeOptions={[10, 20, 50]}
               disableRowSelectionOnClick
             />
             <Box sx={{ display: 'flex' }}>
